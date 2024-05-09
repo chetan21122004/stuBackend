@@ -2,6 +2,8 @@
 const express = require('express');
 const router = express.Router();
 const app = express();
+require('dotenv').config();
+
 const cors = require("cors");
 const fs = require('fs');
 const path = require('path'); // Import the 'path' module here
@@ -10,7 +12,7 @@ const bodyParser = require('body-parser'); // Import bodyParser for parsing requ
 const pool = require('./db'); // Import the db.js file
 const uploadsDir = './uploads';
 const bcrypt = require('bcrypt');
-
+const PORT = process.env.PORT || 3000;
 app.use("/images",express.static('uploads'));
 app.use(express.json());
 app.use(cors())
@@ -164,8 +166,8 @@ app.get('/students/get', async (req, res) => {
 
 app.use('/', router);
 
-const PORT =  2000;
 app.listen(PORT, () => {
-  console.log(`App is running on port ${PORT}`);
-});
+  console.log(`Example app listening on port ${PORT}`)
+})
+
 
