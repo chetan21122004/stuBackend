@@ -1,6 +1,8 @@
+const express = require('express')
+const app = express()
 // app.js
-const router = express.Router();
 require('dotenv').config();
+const router = express.Router();
 
 const cors = require("cors");
 const fs = require('fs');
@@ -13,8 +15,6 @@ const bcrypt = require('bcrypt');
 app.use("/images",express.static('uploads'));
 app.use(express.json());
 app.use(cors())
-const express = require('express')
-const app = express()
 const port = process.env.PORT || 4000;
 app.get('/', (req, res) => {
   res.send('Hello World!')
@@ -114,7 +114,7 @@ app.get('/attendance/get/:studentId', async (req, res) => {
 app.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
-    
+    ``
     // Query the database to check if the student exists
     const query = `
       SELECT * 
