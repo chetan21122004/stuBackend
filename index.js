@@ -164,7 +164,7 @@ app.get('/students/get', async (req, res) => {
 
 app.use('/', router);
 
-const PORT = process.env.PORT || 2000;
+const PORT =  2000;
 app.listen(PORT, () => {
   console.log(`App is running on port ${PORT}`);
 });
