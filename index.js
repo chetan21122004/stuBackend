@@ -21,9 +21,7 @@ app.get('/', (req, res) => {
 })
 // POST route to create a new user
 
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir);
-}
+
 // Multer configuration
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -85,33 +83,9 @@ app.get('/attendance/get/:studentId', async (req, res) => {
   } catch (error) {
     console.error('Error fetching attendance records:', error);
     res.status(500).json({ error: 'Internal server error' });
+
   }
 });
-// app.post('/login', async (req, res) => {
-//   try {
-//     const { student_id, phone_number } = req.body;
-    
-//     // Query the database to check if the student exists and credentials are valid
-//     const query = `
-//       SELECT * 
-//       FROM students 
-//       WHERE student_id = $1 AND phone_number = $2
-//     `;
-//     const result = await pool.query(query, [student_id, phone_number]);
-
-//     if (result.rows.length === 1) {
-//       // Student with provided credentials exists, proceed with login
-//       res.status(200).json(result.rows[0] );
-//     } else {
-//       // Invalid credentials, send error response
-//       res.status(401).json({ error: 'Invalid student not exist' });
-//     }
-//   } catch (error) {
-//     console.error('Error during login:', error);
-//     res.status(401).json({ error: 'Invalid student not exist' });
-//   }
-// });
-// POST route to authenticate a student
 
 
 app.post('/login', async (req, res) => {
@@ -151,7 +125,6 @@ app.post('/login', async (req, res) => {
 
 
 
-
 // GET route to fetch all users
 app.get('/students/get', async (req, res) => {
   try {
@@ -169,12 +142,7 @@ app.get('/students/get', async (req, res) => {
 
 
 
-
 app.use('/', router);
-
-
-
-
 
 
 app.listen(port, () => {
