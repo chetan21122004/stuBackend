@@ -11,11 +11,11 @@ const multer = require('multer');
 const bodyParser = require('body-parser'); // Import bodyParser for parsing request bodies
 const pool = require('./db'); // Import the db.js file
 const uploadsDir = './uploads';
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 app.use("/images",express.static('uploads'));
 app.use(express.json());
 app.use(cors())
-const port = process.env.PORT || 4000;
+const port = process.env.PORT || 2000;
 app.get('/', (req, res) => {
   res.send('Hello World!')
 })
@@ -42,14 +42,14 @@ const upload = multer({ storage: storage });
 
 
 // POST route to create a new student with hashed password
-app.post('/students/create',upload.single('image'), async (req, res) => {
+app.post('/student/create',upload.single('image'), async (req, res) => {
   try {
     const { first_name, last_name, date_of_birth, gender, email, phone_number, address, password } = req.body;
     const filepath1 = req.file.path; // Get the file path where the image is stored
     const parts = filepath1.split('\\')
     const filepath = `${req.protocol}://${req.get('host')}/images/${parts[1]}`; 
     // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10); // Use a salt of 10 rounds
+    const hashedPassword = bcrypt.hashSync(password, 10); // Synchronous hashing
 
     // Using parameterized query to avoid SQL injection
     const query = `
@@ -58,10 +58,13 @@ app.post('/students/create',upload.single('image'), async (req, res) => {
       RETURNING *;`; // Use RETURNING * to get the newly inserted user data
 
     const result = await pool.query(query, [first_name, last_name, date_of_birth, gender, email, phone_number, address, filepath, hashedPassword]);
+const user = result.rows[0]
+delete user.password;
 
     // Send the newly inserted user data as response
-    res.json(result.rows[0]);
+    res.json(user);
   } catch (error) {
+    console.log(error);
     console.error('Error creating user:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
@@ -127,7 +130,7 @@ app.post('/login', async (req, res) => {
       // Student with provided email exists, proceed with login
       const user = result.rows[0];
       // Compare the provided password with the hashed password from the database
-      const passwordMatch = await bcrypt.compare(password, user.password);
+      const passwordMatch = bcrypt.compareSync(password, user.password); // Synchronous comparison
       if (passwordMatch) {
         // Passwords match, send user data without the password
         delete user.password;
