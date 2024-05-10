@@ -45,7 +45,7 @@ app.post('/student/create',upload.single('image'), async (req, res) => {
     const { first_name, last_name, date_of_birth, gender, email, phone_number, address, password } = req.body;
     const filepath1 = req.file.path; // Get the file path where the image is stored
     const parts = filepath1.split('\\')
-    const filepath = `${req.protocol}://${req.get('host')}/images/${parts[1]}`; 
+    const filepath = `https://stu-backend.vercel.app//images/${parts[1]}`; 
     // Hash the password
     const hashedPassword = bcrypt.hashSync(password, 10); // Synchronous hashing
 
