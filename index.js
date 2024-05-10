@@ -5,12 +5,12 @@ require('dotenv').config();
 const router = express.Router();
 
 const cors = require("cors");
-const fs = require('fs');
-const path = require('path'); // Import the 'path' module here
-const multer = require('multer');
+// const fs = require('fs');
+// const path = require('path'); // Import the 'path' module here
+// const multer = require('multer');
 const bodyParser = require('body-parser'); // Import bodyParser for parsing request bodies
 const pool = require('./db'); // Import the db.js file
-const uploadsDir = './uploads';
+// const uploadsDir = './uploads';
 const bcrypt = require('bcryptjs');
 app.use("/images",express.static('uploads'));
 app.use(express.json());
@@ -23,50 +23,54 @@ app.get('/', (req, res) => {
 
 
 // Multer configuration
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadsDir); // Save uploaded files to the 'uploads' folder
-  },
-  filename: function (req, file, cb) {
-    // Generate a unique filename by appending a timestamp
-    const uniqueFilename = Date.now() + '-' + file.originalname;
-    cb(null, uniqueFilename);
-  },
-});
+// const storage = multer.diskStorage({
+//   destination: function (req, file, cb) {
+//     cb(null, uploadsDir); // Save uploaded files to the 'uploads' folder
+//   },
+//   filename: function (req, file, cb) {
+//     // Generate a unique filename by appending a timestamp
+//     const uniqueFilename = Date.now() + '-' + file.originalname;
+//     cb(null, uniqueFilename);
+//   },
+// });
 
-const upload = multer({ storage: storage });
-
-
+// const upload = multer({ storage: storage });
 
 
-// POST route to create a new student with hashed password
-app.post('/student/create',upload.single('image'), async (req, res) => {
+app.post('/student/create', async (req, res) => {
   try {
+    // Check if a file was uploaded
+    // if (!req.file) {
+    //   return res.status(400).json({ error: 'No file uploaded' });
+    // }
+
     const { first_name, last_name, date_of_birth, gender, email, phone_number, address, password } = req.body;
-    const filepath1 = req.file.path; // Get the file path where the image is stored
-    const parts = filepath1.split('\\')
-    const filepath = `${req.protocol}://${req.get('host')}/images/${parts[1]}`; 
+    // const filepath1 = req.file.path; // Get the file path where the image is stored
+    // const parts = filepath1.split('\\');
+    // const filepath = `${req.protocol}://${req.get('host')}/images/${parts[1]}`; 
     // Hash the password
     const hashedPassword = bcrypt.hashSync(password, 10); // Synchronous hashing
 
     // Using parameterized query to avoid SQL injection
     const query = `
-      INSERT INTO students (first_name, last_name, date_of_birth, gender, email, phone_number, address, student_dp, password) 
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      INSERT INTO students (first_name, last_name, date_of_birth, gender, email, phone_number, address, password) 
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       RETURNING *;`; // Use RETURNING * to get the newly inserted user data
 
-    const result = await pool.query(query, [first_name, last_name, date_of_birth, gender, email, phone_number, address, filepath, hashedPassword]);
-const user = result.rows[0]
-delete user.password;
+    const result = await pool.query(query, [first_name, last_name, date_of_birth, gender, email, phone_number, address,  hashedPassword]);
+    const user = result.rows[0];
+    delete user.password;
 
     // Send the newly inserted user data as response
     res.json(user);
   } catch (error) {
-    console.log(error);
     console.error('Error creating user:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+
+
 
 
 
