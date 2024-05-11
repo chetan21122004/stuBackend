@@ -8,11 +8,11 @@ const cors = require("cors");
 // const fs = require('fs');
 // const path = require('path'); // Import the 'path' module here
 // const multer = require('multer');
-const bodyParser = require('body-parser'); // Import bodyParser for parsing request bodies
+const bodyParser = require('body-parser') ; // Import bodyParser for parsing request bodies
 const pool = require('./db'); // Import the db.js file
 // const uploadsDir = './uploads';
 const bcrypt = require('bcryptjs');
-app.use("/images",express.static('uploads'));
+// app.use("/images",express.static('uploads'));
 app.use(express.json());
 app.use(cors())
 const port = process.env.PORT || 2000;
@@ -55,11 +55,17 @@ app.post('/student/create', async (req, res) => {
     const query = `
       INSERT INTO students (first_name, last_name, date_of_birth, gender, email, phone_number, address, password) 
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-      RETURNING *;`; // Use RETURNING * to get the newly inserted user data
+      RETURNING *;`;
+    // Use RETURNING * to get the newly inserted user data
 
     const result = await pool.query(query, [first_name, last_name, date_of_birth, gender, email, phone_number, address,  hashedPassword]);
     const user = result.rows[0];
     delete user.password;
+console.log(user.student_id);
+
+    
+const addColQuery = `ALTER TABLE attendance_record ADD COLUMN "${user.student_id}" varchar(20);`;
+await pool.query(addColQuery);
 
     // Send the newly inserted user data as response
     res.json(user);
