@@ -77,13 +77,73 @@ await pool.query(addColQuery);
 
 
 
+app.post('/genrateqr', async (req, res) => {
+  try {
+    const { lec_id, tem_lec_id } = req.body;
+
+    // Construct the SQL query to update the attendance_record table
+    const sel = `select `
+    const query = `UPDATE attendance_record 
+               SET tem_lec_id = $1 
+               WHERE lec_id = $2 
+               RETURNING tem_lec_id`;
+
+const response = await pool.query(query, [tem_lec_id, lec_id]);
+const updatedTemLecId = response.rows[0].tem_lec_id;
+    // Handle the response if needed
+    if (response) {
+      // Handle success
+      res.status(200).json(updatedTemLecId);
+    } else {
+      // Handle failure
+      res.status(500).json({ error: 'Failed to update temp id' });
+    }
+  } catch (err) {
+    console.error('Error generating code:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 
 
+app.post('/scanqr', async (req, res) => {
+  try {
+    const { student_id, tem_lec_id } = req.body;
 
-// Assuming you're using Express.js
+    // Query the attendance_record table based on tem_lec_id received from the request
+    const id = await pool.query(`SELECT * FROM attendance_record WHERE tem_lec_id = $1`, [tem_lec_id]);
 
-// GET route to fetch attendance records by student ID
+    if (id.rows.length ==1) {
+      // Construct the update query dynamically based on the student_id
+      const updateQuery = `
+        UPDATE attendance_record
+        SET "${student_id}" = 'present'
+        WHERE tem_lec_id = $1;
+      `;
+
+      // Execute the update query
+      const response = await pool.query(updateQuery, [tem_lec_id]);
+
+      // Handle the response if needed
+      if (response) {
+        // Handle success
+        res.status(200).json({ message: 'Record updated successfully' });
+      } else {
+        // Handle failure
+        res.status(500).json({ error: 'Failed to update record' });
+      }
+    } else {
+      // No record found with the given tem_lec_id
+      res.status(404).json({ error: 'Record not found' });
+    }
+  } catch (err) {
+    console.error('Error updating record:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
+
 app.get('/attendance/get/:studentId', async (req, res) => {
   try {
     const { studentId } = req.params.studentId;
