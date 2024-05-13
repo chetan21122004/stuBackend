@@ -22,6 +22,14 @@ app.get('/', (req, res) => {
 // POST route to create a new user
 
 
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', 'https://teacger-frontend-eg649bk4i-chetans-projects-9b041f40.vercel.app');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  next();
+});
+
+
 // Multer configuration
 // const storage = multer.diskStorage({
 //   destination: function (req, file, cb) {
