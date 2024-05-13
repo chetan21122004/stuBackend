@@ -21,9 +21,12 @@ app.get('/', (req, res) => {
 })
 // POST route to create a new user
 
-
 app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', 'https://teacger-frontend-eg649bk4i-chetans-projects-9b041f40.vercel.app');
+  const allowedOrigins = ['https://teacger-frontend.vercel.app', 'https://teacger-frontend-eg649bk4i-chetans-projects-9b041f40.vercel.app'];
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   next();
