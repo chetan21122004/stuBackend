@@ -22,7 +22,7 @@ app.get('/', (req, res) => {
 // POST route to create a new user
 
 app.use((req, res, next) => {
-  const allowedOrigins = ['https://teacger-frontend.vercel.app', 'https://teacger-frontend-eg649bk4i-chetans-projects-9b041f40.vercel.app'];
+  const allowedOrigins = ['https://teacger-frontend.vercel.app', 'https://teacger-frontend-eg649bk4i-chetans-projects-9b041f40.vercel.app','https://student-frontend-eu1u.vercel.app','https://student-frontend-eu1u-ae7wb5bh8-chetans-projects-9b041f40.vercel.app'];
   const origin = req.headers.origin;
   if (allowedOrigins.includes(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
