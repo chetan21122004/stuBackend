@@ -22,7 +22,7 @@ app.get('/', (req, res) => {
 // POST route to create a new user
 // for particular origin
 // app.use((req, res, next) => {
-//   const allowedOrigins = ['https://teacger-frontend.vercel.app', 'https://teacger-frontend-eg649bk4i-chetans-projects-9b041f40.vercel.app','https://student-frontend-eu1u.vercel.app','https://student-frontend-eu1u-ae7wb5bh8-chetans-projects-9b041f40.vercel.app'];
+//   const allowedOrigins = ['https://teacger-frontend.vercel.app', 'https://teacger-frontend-eg649bk4i-chetans-projects-9b041f40.vercel.app','https://student-frontend-eu1u.vercel.app','https://student-frontend-eu1u-ae7wb5bh8-chetans-projects-9b041f40.vercel.app','http://localhost:5173'];
 //   const origin = req.headers.origin;
 //   if (allowedOrigins.includes(origin)) {
 //     res.setHeader('Access-Control-Allow-Origin', origin);
@@ -126,33 +126,33 @@ const updatedTemLecId = response.rows[0].tem_lec_id;
 
 
 
+
 app.post('/scanqr', async (req, res) => {
   try {
-    const { student_id, tem_lec_id } = req.body;
+    const { student_id, tem_lec_id} = req.body;
 
     // Query the attendance_record table based on tem_lec_id received from the request
-    const id = await pool.query(`SELECT * FROM attendance_record WHERE tem_lec_id = $1`, [tem_lec_id]);
-
-    if (id.rows.length ==1) {
-      // Construct the update query dynamically based on the student_id
-      const updateQuery = `
-        UPDATE attendance_record
-        SET "${student_id}" = 'present'
-        WHERE tem_lec_id = $1;
-      `;
-
-      // Execute the update query
-      const response = await pool.query(updateQuery, [tem_lec_id]);
-
-      // Handle the response if needed
-      if (response) {
-        // Handle success
-        res.status(200).json({ message: 'Record updated successfully' });
-      } else {
-        // Handle failure
-        res.status(500).json({ error: 'Failed to update record' });
+       // Query the attendance_record table based on tem_lec_id received from the request
+       const id = await pool.query(`SELECT * FROM attendance_record WHERE tem_lec_id = $1`, [tem_lec_id]);
+       const query = `UPDATE attendance_record SET "${student_id}" = 'process' WHERE  tem_lec_id = $1`
+       
+   
+       if (id.rows.length === 1)
+      {
+         // Check if the student is already in the studentList
+        const status= await pool.query(query, [tem_lec_id])
+        console.log(status);
+            if (status) {
+             console.log('Done');
+            res.status(200).json({ message: 'Done from your side' });
+            
+            }else{
+              res.status(200).json({ message: 'Already Done' });
+              console.log('');
+            }
       }
-    } else {
+
+    else {
       // No record found with the given tem_lec_id
       res.status(404).json({ error: 'Record not found' });
     }
@@ -161,7 +161,6 @@ app.post('/scanqr', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
-
 
 
 app.get('/attendance/get/:studentId', async (req, res) => {
@@ -216,17 +215,23 @@ app.post('/login', async (req, res) => {
 
 
 // GET route to fetch all users
-app.get('/students/get', async (req, res) => {
+app.post('/students/get', async (req, res) => {
+  const { lec_id } = req.body;
   try {
-    // Corrected query to fetch all users from the users table
-    const query = 'SELECT * FROM students ORDER BY student_id DESC';
-    const result = await pool.query(query);
+    const query = 'SELECT find_column_with_value($1, $2)';
+    const values = [lec_id, 'process'];
+    const idquery = await pool.query(query, values);
+    const id =idquery.rows[0].find_column_with_value;
 
-    // Send the results as JSON
-    res.json(result.rows);
+
+    const studquery = `SELECT * from students where student_id =$1` ;
+
+    const list = await pool.query(studquery,[id])
+    // console.log(list);
+    res.json(list.rows);
   } catch (error) {
-    console.error('Error fetching users:', error);
-    res.status(500).json({ error: 'Internal server error',error: 'Internal server error' });
+    console.error('Error fetching students:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
