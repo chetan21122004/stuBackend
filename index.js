@@ -215,27 +215,58 @@ app.post('/login', async (req, res) => {
 
 
 // GET route to fetch all users
-app.post('/students/get', async (req, res) => {
-  const { lec_id } = req.body;
-  try {
-    const query = 'SELECT find_column_with_value($1, $2)';
-    const values = [lec_id, 'process'];
-    const idquery = await pool.query(query, values);
-    const id =idquery.rows[0].find_column_with_value;
+  // app.post('/students/get', async (req, res) => {
+  //   const { lec_id } = req.body;
+  //   try {
+  //     const query = 'SELECT find_columns_with_value($1, $2)';
+  //     const values = [lec_id, 'process'];
+  //     const idquery = await pool.query(query, values);
+  //     console.log(idquery);
+  //     const id =idquery.rows[0].find_columns_with_value;
 
 
-    const studquery = `SELECT * from students where student_id =$1` ;
+  //     const studquery = `SELECT * from students where student_id =$1` ;
 
-    const list = await pool.query(studquery,[id])
-    // console.log(list);
-    res.json(list.rows);
-  } catch (error) {
-    console.error('Error fetching students:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
+  //     const list = await pool.query(studquery,[id])
+  //     // console.log(list);
+  //     res.json(list.rows);
+  //   } catch (error) {
+  //     console.error('Error fetching students:', error);
+  //     res.status(500).json({ error: 'Internal server error' });
+  //   }
+  // });
 
-
+  app.post('/students/get', async (req, res) => {
+    const { lec_id } = req.body;
+    try {
+      // Call the function to get multiple column names where value is 'process'
+      const query = 'SELECT * FROM find_columns_with_value($1, $2)';
+      const values = [lec_id, 'process'];
+      const idquery = await pool.query(query, values);
+  console.log(idquery);
+      // Extract the column names from the result
+      const columnNames = idquery.rows.map(row => row.find_columns_with_value);
+  
+      if (columnNames.length === 0) {
+        // If no columns found, return an empty response
+        return res.json([]);
+      }
+  
+      // Assuming you need to fetch student records based on the result
+      // Modify this part based on your actual requirement
+      const studquery = `SELECT * FROM students WHERE student_id IN (${columnNames.map((_, i) => `$${i + 1}`).join(', ')})`;
+  
+      // Execute the query to fetch student records
+      const list = await pool.query(studquery, columnNames);
+  
+      // Send the response
+      res.json(list.rows);
+    } catch (error) {
+      console.error('Error fetching students:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+  
 
 app.use('/', router);
 
