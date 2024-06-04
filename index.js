@@ -11,16 +11,19 @@ const bodyParser = require('body-parser') ; // Import bodyParser for parsing req
 const pool = require('./db'); // Import the db.js file
 const bcrypt = require('bcryptjs');
 app.use(express.json());
+
+const port = 2000
+const allowedOrigins = [
+  'https://teacger-frontend.vercel.app',
+  'https://teacger-frontend.vercel.app/events',
+  'https://teacger-frontend-eg649bk4i-chetans-projects-9b041f40.vercel.app',
+  'https://student-frontend-eu1u.vercel.app',
+  'https://student-frontend-eu1u-ae7wb5bh8-chetans-projects-9b041f40.vercel.app',
+  'http://localhost:5173'
+];
+
 app.use(cors({
   origin: (origin, callback) => {
-    const allowedOrigins = [
-      'https://teacger-frontend.vercel.app',
-      'https://teacger-frontend.vercel.app/events',
-      'https://teacger-frontend-eg649bk4i-chetans-projects-9b041f40.vercel.app',
-      'https://student-frontend-eu1u.vercel.app',
-      'https://student-frontend-eu1u-ae7wb5bh8-chetans-projects-9b041f40.vercel.app',
-      'http://localhost:5173'
-    ];
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
@@ -32,13 +35,23 @@ app.use(cors({
   credentials: true,
 }));
 
-const port = 2000 ;
+app.use(bodyParser.json());
 
-app.use('/', router);
-
-app.get('/', (req, res) => {
-  res.send('Hello World!')
-})
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200);
+  } else {
+    next();
+  }
+});
 // // for particular origin
 // const allowedOrigins = [
 //   'https://teacger-frontend.vercel.app',
