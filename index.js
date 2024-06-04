@@ -9,6 +9,7 @@ require('dotenv').config();
 const cors = require("cors");
 const bodyParser = require('body-parser') ; // Import bodyParser for parsing request bodies
 const pool = require('./db'); // Import the db.js file
+const bcrypt = require('bcryptjs');
 app.use(express.json());
 app.use(cors())
 const port = 2000 ;
@@ -123,7 +124,7 @@ app.get('/attendance/get/:studentId', async (req, res) => {
 app.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
-    ``
+    
     // Query the database to check if the student exists
     const query = `
       SELECT * 
