@@ -11,7 +11,27 @@ const bodyParser = require('body-parser') ; // Import bodyParser for parsing req
 const pool = require('./db'); // Import the db.js file
 const bcrypt = require('bcryptjs');
 app.use(express.json());
-app.use(cors())
+app.use(cors({
+  origin: (origin, callback) => {
+    const allowedOrigins = [
+      'https://teacger-frontend.vercel.app',
+      'https://teacger-frontend.vercel.app/events',
+      'https://teacger-frontend-eg649bk4i-chetans-projects-9b041f40.vercel.app',
+      'https://student-frontend-eu1u.vercel.app',
+      'https://student-frontend-eu1u-ae7wb5bh8-chetans-projects-9b041f40.vercel.app',
+      'http://localhost:5173'
+    ];
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+}));
+
 const port = 2000 ;
 
 app.use('/', router);
@@ -19,31 +39,31 @@ app.use('/', router);
 app.get('/', (req, res) => {
   res.send('Hello World!')
 })
-// for particular origin
-const allowedOrigins = [
-  'https://teacger-frontend.vercel.app',
-  'https://teacger-frontend.vercel.app/events',
-  'https://teacger-frontend-eg649bk4i-chetans-projects-9b041f40.vercel.app',
-  'https://student-frontend-eu1u.vercel.app',
-  'https://student-frontend-eu1u-ae7wb5bh8-chetans-projects-9b041f40.vercel.app',
-  'http://localhost:5173'
-];
+// // for particular origin
+// const allowedOrigins = [
+//   'https://teacger-frontend.vercel.app',
+//   'https://teacger-frontend.vercel.app/events',
+//   'https://teacger-frontend-eg649bk4i-chetans-projects-9b041f40.vercel.app',
+//   'https://student-frontend-eu1u.vercel.app',
+//   'https://student-frontend-eu1u-ae7wb5bh8-chetans-projects-9b041f40.vercel.app',
+//   'http://localhost:5173'
+// ];
 
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  }
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
+// app.use((req, res, next) => {
+//   const origin = req.headers.origin;
+//   if (allowedOrigins.includes(origin)) {
+//     res.setHeader('Access-Control-Allow-Origin', origin);
+//   }
+//   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+//   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+//   res.setHeader('Access-Control-Allow-Credentials', 'true');
 
-  if (req.method === 'OPTIONS') {
-    return res.sendStatus(200); // Preflight request response
-  }
+//   if (req.method === 'OPTIONS') {
+//     return res.sendStatus(200); // Preflight request response
+//   }
 
-  next();
-});
+//   next();
+// });
 
 
 
