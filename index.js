@@ -20,27 +20,42 @@ app.get('/', (req, res) => {
   res.send('Hello World!')
 })
 // for particular origin
+const allowedOrigins = [
+  'https://teacger-frontend.vercel.app',
+  'https://teacger-frontend.vercel.app/events',
+  'https://teacger-frontend-eg649bk4i-chetans-projects-9b041f40.vercel.app',
+  'https://student-frontend-eu1u.vercel.app',
+  'https://student-frontend-eu1u-ae7wb5bh8-chetans-projects-9b041f40.vercel.app',
+  'http://localhost:5173'
+];
+
 app.use((req, res, next) => {
-  const allowedOrigins = ['https://teacger-frontend.vercel.app', 'https://teacger-frontend-eg649bk4i-chetans-projects-9b041f40.vercel.app','https://student-frontend-eu1u.vercel.app','https://student-frontend-eu1u-ae7wb5bh8-chetans-projects-9b041f40.vercel.app','http://localhost:5173'];
   const origin = req.headers.origin;
   if (allowedOrigins.includes(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
   }
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200); // Preflight request response
+  }
+
   next();
 });
 
 
-for all origin
+
+// for all origin
 
 
-app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*'); // Allow requests from any origin
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  next();
-});
+// app.use((req, res, next) => {
+//   res.setHeader('Access-Control-Allow-Origin', '*'); // Allow requests from any origin
+//   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+//   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+//   next();
+// });
 
 
 
