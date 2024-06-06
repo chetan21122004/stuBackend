@@ -15,6 +15,7 @@ app.use(express.json());
 const port=2000
 const allowedOrigins = [
   'https://teacger-frontend.vercel.app',
+  'https://stu-backend.vercel.app',
   'https://teacger-frontend.vercel.app/events',
   'https://teacger-frontend-eg649bk4i-chetans-projects-9b041f40.vercel.app',
   'https://student-frontend-eu1u.vercel.app',
