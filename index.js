@@ -5,21 +5,22 @@ require('dotenv').config();
 const router = express.Router();
 
 require('dotenv').config();
-
+const axios = require('axios')
 const cors = require("cors");
 const bodyParser = require('body-parser') ; // Import bodyParser for parsing request bodies
 const pool = require('./db'); // Import the db.js file
 const bcrypt = require('bcryptjs');
 app.use(express.json());
 
-const port = 2000
+const port=2000
 const allowedOrigins = [
   'https://teacger-frontend.vercel.app',
   'https://teacger-frontend.vercel.app/events',
   'https://teacger-frontend-eg649bk4i-chetans-projects-9b041f40.vercel.app',
   'https://student-frontend-eu1u.vercel.app',
   'https://student-frontend-eu1u-ae7wb5bh8-chetans-projects-9b041f40.vercel.app',
-  'http://localhost:5173'
+  'http://localhost:5173',
+  'http://localhost:5174'
 ];
 
 app.use(cors({
@@ -241,41 +242,52 @@ app.post('/login', async (req, res) => {
   
 
 
+ 
+
+
   let clients = [];
 
-  // Middleware to setup SSE connection
-  app.get('/events', (req, res) => {
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache');
-    res.setHeader('Connection', 'keep-alive');
-    res.flushHeaders(); // flush the headers to establish SSE with the client
-  
-    clients.push(res);
-  
-    req.on('close', () => {
-      clients = clients.filter(client => client !== res);
-    });
+app.get('/events', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders(); // flush the headers to establish SSE with the client
+
+  clients.push(res);
+
+  req.on('close', () => {
+    clients = clients.filter(client => client !== res);
   });
-  
-  // Function to send data to SSE clients
-  const sendSSEToClients = (data) => {
-    const message = `data: ${JSON.stringify(data)}\n\n`;
-    clients.forEach(client => client.write(message));
-  };
+});
+
+const sendSSEToClients = (data) => {
+  const message = `data: ${JSON.stringify(data)}\n\n`;
+  clients.forEach(client => client.write(message));
+};
+
+// Example endpoint to trigger an SSE message
+app.post('/trigger-sse', (req, res) => {
+  const data = req.body; // Ensure you send JSON data
+  sendSSEToClients(data);
+  res.status(200).send('Event sent');
+});
+
   // Route to handle scanning QR code and updating data
+  
   app.post('/scanqr', async (req, res) => {
     try {
-      const { user} = req.body;
+      const { user } = req.body;
   
       console.log(user);
       const query = `UPDATE attendance_record SET "${user.student_id}" = 'process' WHERE tem_lec_id = $1`;
       const response = await pool.query(query, [user.tem_lec_id]);
+  
       if (response.rowCount > 0) {
-      
-        sendSSEToClients(user);
+        // Send SSE event to the SSE server
+        // await axios.post('https://stu-backend.vercel.app/trigger-sse', user);
+        await axios.post('http://localhost:2000/trigger-sse', user);
   
-  
-        res.status(200).json({ message: 'Done From your side',user});
+        res.status(200).json({ message: 'Done From your side', user });
       } else {
         res.status(404).json({ error: 'Record not found' });
       }
@@ -287,12 +299,54 @@ app.post('/login', async (req, res) => {
 
 
 
-
-
 app.listen(port, () => {
   console.log(`app listening on port ${port}`)
 })
 
 
 
+
+// let clients = [];
+
+  // Middleware to setup SSE connection
+  // app.get('/events', (req, res) => {
+  //   res.setHeader('Content-Type', 'text/event-stream');
+  //   res.setHeader('Cache-Control', 'no-cache');
+  //   res.setHeader('Connection', 'keep-alive');
+  //   res.flushHeaders(); // flush the headers to establish SSE with the client
+  
+  //   clients.push(res);
+  
+  //   req.on('close', () => {
+  //     clients = clients.filter(client => client !== res);
+  //   });
+  // });
+  
+  // // Function to send data to SSE clients
+  // const sendSSEToClients = (data) => {
+  //   const message = `data: ${JSON.stringify(data)}\n\n`;
+  //   clients.forEach(client => client.write(message));
+  // };
+
+  // app.post('/scanqr', async (req, res) => {
+  //   try {
+  //     const { user} = req.body;
+  
+  //     console.log(user);
+  //     const query = `UPDATE attendance_record SET "${user.student_id}" = 'process' WHERE tem_lec_id = $1`;
+  //     const response = await pool.query(query, [user.tem_lec_id]);
+  //     if (response.rowCount > 0) {
+      
+  //       sendSSEToClients(user);
+  
+  
+  //       res.status(200).json({ message: 'Done From your side',user});
+  //     } else {
+  //       res.status(404).json({ error: 'Record not found' });
+  //     }
+  //   } catch (error) {
+  //     console.error('Error updating record:', error);
+  //     res.status(500).json({ error: 'Internal server error' });
+  //   }
+  // });
 
