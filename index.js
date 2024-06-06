@@ -13,11 +13,21 @@ const bcrypt = require('bcryptjs');
 app.use(express.json());
 
 const port=2000
+// const allowedOrigins = [
+//   'https://teacger-frontend.vercel.app',
+//   'https://stu-backend.vercel.app',
+//   'https://stu-backend.vercel.app/events',
+//   'https://teacger-frontend.vercel.app/events',
+//   'https://teacger-frontend-eg649bk4i-chetans-projects-9b041f40.vercel.app',
+//   'https://student-frontend-eu1u.vercel.app',
+//   'https://student-frontend-eu1u-ae7wb5bh8-chetans-projects-9b041f40.vercel.app',
+//   'http://localhost:5173',
+//   'http://localhost:5174'
+// ];
+
 const allowedOrigins = [
   'https://teacger-frontend.vercel.app',
   'https://stu-backend.vercel.app',
-  'https://stu-backend.vercel.app/events',
-  'https://teacger-frontend.vercel.app/events',
   'https://teacger-frontend-eg649bk4i-chetans-projects-9b041f40.vercel.app',
   'https://student-frontend-eu1u.vercel.app',
   'https://student-frontend-eu1u-ae7wb5bh8-chetans-projects-9b041f40.vercel.app',
@@ -37,24 +47,6 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
 }));
-
-app.use(bodyParser.json());
-
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  }
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  
-  if (req.method === 'OPTIONS') {
-    res.sendStatus(200);
-  } else {
-    next();
-  }
-});
 // // for particular origin
 // const allowedOrigins = [
 //   'https://teacger-frontend.vercel.app',
