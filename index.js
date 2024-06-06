@@ -286,8 +286,8 @@ app.post('/trigger-sse', (req, res) => {
   
       if (response.rowCount > 0) {
         // Send SSE event to the SSE server
-        // await axios.post('https://stu-backend.vercel.app/trigger-sse', user);
-        await axios.post('http://localhost:2000/trigger-sse', user);
+        await axios.post('https://stu-backend.vercel.app/trigger-sse', user);
+        // await axios.post('http://localhost:2000/trigger-sse', user);
   
         res.status(200).json({ message: 'Done From your side', user });
       } else {
