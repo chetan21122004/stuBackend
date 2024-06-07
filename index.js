@@ -79,12 +79,12 @@ const allowedOrigins = [
 // for all origin
 
 
-// app.use((req, res, next) => {
-//   res.setHeader('Access-Control-Allow-Origin', '*'); // Allow requests from any origin
-//   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-//   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-//   next();
-// });
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*'); // Allow requests from any origin
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  next();
+});
 
 
 
@@ -241,35 +241,35 @@ app.get('/',async(req,res)=>{
 
  
 
-  let clients = [];
+  // let clients = [];
   
-  app.get('/events', (req, res) => {
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache');
-    res.setHeader('Connection', 'keep-alive');
+  // app.get('/events', (req, res) => {
+  //   res.setHeader('Content-Type', 'text/event-stream');
+  //   res.setHeader('Cache-Control', 'no-cache');
+  //   res.setHeader('Connection', 'keep-alive');
   
-    // Adding CORS headers for the SSE endpoint
-    const origin = req.headers.origin;
-    if (allowedOrigins.includes(origin)) {
-      res.setHeader('Access-Control-Allow-Origin', origin);
-    } else {
-      res.setHeader('Access-Control-Allow-Origin', 'https://stu-backend.vercel.app'); // Default allowed origin
-    }
-    res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  //   // Adding CORS headers for the SSE endpoint
+  //   const origin = req.headers.origin;
+  //   if (allowedOrigins.includes(origin)) {
+  //     res.setHeader('Access-Control-Allow-Origin', origin);
+  //   } else {
+  //     res.setHeader('Access-Control-Allow-Origin', 'https://stu-backend.vercel.app'); // Default allowed origin
+  //   }
+  //   res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
   
-    res.flushHeaders(); // Flush the headers to establish SSE with the client
+  //   res.flushHeaders(); // Flush the headers to establish SSE with the client
   
-    clients.push(res);
+  //   clients.push(res);
   
-    req.on('close', () => {
-      clients = clients.filter(client => client !== res);
-    });
-  });
+  //   req.on('close', () => {
+  //     clients = clients.filter(client => client !== res);
+  //   });
+  // });
   
-  const sendSSEToClients = (data) => {
-    const message = `data: ${JSON.stringify(data)}\n\n`;
-    clients.forEach(client => client.write(message));
-  };
+  // const sendSSEToClients = (data) => {
+  //   const message = `data: ${JSON.stringify(data)}\n\n`;
+  //   clients.forEach(client => client.write(message));
+  // };
 
   // Route to handle scanning QR code and updating data
   
@@ -300,54 +300,54 @@ app.get('/',async(req,res)=>{
 
 
 
+  
+  
+  let clients = [];
+  
+    // Middleware to setup SSE connection
+    app.get('/events', (req, res) => {
+      res.setHeader('Content-Type', 'text/event-stream');
+      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('Connection', 'keep-alive');
+      res.flushHeaders(); // flush the headers to establish SSE with the client
+    
+      clients.push(res);
+    
+      req.on('close', () => {
+        clients = clients.filter(client => client !== res);
+      });
+    });
+    
+    // Function to send data to SSE clients
+    const sendSSEToClients = (data) => {
+      const message = `data: ${JSON.stringify(data)}\n\n`;
+      clients.forEach(client => client.write(message));
+    };
+  
+    app.post('/scanqr', async (req, res) => {
+      try {
+        const { user} = req.body;
+    
+        console.log(user);
+        const query = `UPDATE attendance_record SET "${user.student_id}" = 'process' WHERE tem_lec_id = $1`;
+        const response = await pool.query(query, [user.tem_lec_id]);
+        if (response.rowCount > 0) {
+        
+          sendSSEToClients(user);
+    
+    
+          res.status(200).json({ message: 'Done From your side',user});
+        } else {
+          res.status(404).json({ error: 'Record not found' });
+        }
+      } catch (error) {
+        console.error('Error updating record:', error);
+        res.status(500).json({ error: 'Internal server error' });
+      }
+    });
+
 app.listen(port, () => {
   console.log(`app listening on port ${port}`)
-})
+})  
 
-
-
-
-// let clients = [];
-
-  // Middleware to setup SSE connection
-  // app.get('/events', (req, res) => {
-  //   res.setHeader('Content-Type', 'text/event-stream');
-  //   res.setHeader('Cache-Control', 'no-cache');
-  //   res.setHeader('Connection', 'keep-alive');
-  //   res.flushHeaders(); // flush the headers to establish SSE with the client
-  
-  //   clients.push(res);
-  
-  //   req.on('close', () => {
-  //     clients = clients.filter(client => client !== res);
-  //   });
-  // });
-  
-  // // Function to send data to SSE clients
-  // const sendSSEToClients = (data) => {
-  //   const message = `data: ${JSON.stringify(data)}\n\n`;
-  //   clients.forEach(client => client.write(message));
-  // };
-
-  // app.post('/scanqr', async (req, res) => {
-  //   try {
-  //     const { user} = req.body;
-  
-  //     console.log(user);
-  //     const query = `UPDATE attendance_record SET "${user.student_id}" = 'process' WHERE tem_lec_id = $1`;
-  //     const response = await pool.query(query, [user.tem_lec_id]);
-  //     if (response.rowCount > 0) {
-      
-  //       sendSSEToClients(user);
-  
-  
-  //       res.status(200).json({ message: 'Done From your side',user});
-  //     } else {
-  //       res.status(404).json({ error: 'Record not found' });
-  //     }
-  //   } catch (error) {
-  //     console.error('Error updating record:', error);
-  //     res.status(500).json({ error: 'Internal server error' });
-  //   }
-  // });
 
