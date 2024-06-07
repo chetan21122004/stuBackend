@@ -12,7 +12,7 @@ const pool = require('./db'); // Import the db.js file
 const bcrypt = require('bcryptjs');
 app.use(express.json());
 
-
+app.use(bodyParser.json())
 const port=2000
 // const allowedOrigins = [
 //   'https://teacger-frontend.vercel.app',
@@ -36,18 +36,18 @@ const allowedOrigins = [
   'http://localhost:5174'
 ];
 
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true,
-}));
+// app.use(cors({
+//   origin: (origin, callback) => {
+//     if (!origin || allowedOrigins.includes(origin)) {
+//       callback(null, true);
+//     } else {
+//       callback(new Error('Not allowed by CORS'));
+//     }
+//   },
+//   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+//   allowedHeaders: ['Content-Type', 'Authorization'],
+//   credentials: true,
+// }));
 // // for particular origin
 // const allowedOrigins = [
 //   'https://teacger-frontend.vercel.app',
