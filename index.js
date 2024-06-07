@@ -12,6 +12,7 @@ const pool = require('./db'); // Import the db.js file
 const bcrypt = require('bcryptjs');
 app.use(express.json());
 
+
 const port=2000
 // const allowedOrigins = [
 //   'https://teacger-frontend.vercel.app',
@@ -239,13 +240,23 @@ app.post('/login', async (req, res) => {
  
 
 
-  let clients = [];
+let clients = [];
 
 app.get('/events', (req, res) => {
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
-  res.flushHeaders(); // flush the headers to establish SSE with the client
+
+  // Adding CORS headers for the SSE endpoint
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  } else {
+    res.setHeader('Access-Control-Allow-Origin', 'https://stu-backend.vercel.app'); // Default allowed origin
+  }
+  res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+
+  res.flushHeaders(); // Flush the headers to establish SSE with the client
 
   clients.push(res);
 
@@ -258,13 +269,6 @@ const sendSSEToClients = (data) => {
   const message = `data: ${JSON.stringify(data)}\n\n`;
   clients.forEach(client => client.write(message));
 };
-
-// Example endpoint to trigger an SSE message
-app.post('/trigger-sse', (req, res) => {
-  const data = req.body; // Ensure you send JSON data
-  sendSSEToClients(data);
-  res.status(200).send('Event sent');
-});
 
   // Route to handle scanning QR code and updating data
   
