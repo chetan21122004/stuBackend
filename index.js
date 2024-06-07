@@ -199,7 +199,9 @@ app.post('/login', async (req, res) => {
   }
 });
 
-
+app.get('/',async(req,res)=>{
+  res.status(401).json({ error: 'Hello world' });
+})
 
 // GET route to fetch all users
  
@@ -239,36 +241,35 @@ app.post('/login', async (req, res) => {
 
  
 
-
-let clients = [];
-
-app.get('/events', (req, res) => {
-  res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache');
-  res.setHeader('Connection', 'keep-alive');
-
-  // Adding CORS headers for the SSE endpoint
-  const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  } else {
-    res.setHeader('Access-Control-Allow-Origin', 'https://stu-backend.vercel.app'); // Default allowed origin
-  }
-  res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-
-  res.flushHeaders(); // Flush the headers to establish SSE with the client
-
-  clients.push(res);
-
-  req.on('close', () => {
-    clients = clients.filter(client => client !== res);
+  let clients = [];
+  
+  app.get('/events', (req, res) => {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+  
+    // Adding CORS headers for the SSE endpoint
+    const origin = req.headers.origin;
+    if (allowedOrigins.includes(origin)) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+    } else {
+      res.setHeader('Access-Control-Allow-Origin', 'https://stu-backend.vercel.app'); // Default allowed origin
+    }
+    res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  
+    res.flushHeaders(); // Flush the headers to establish SSE with the client
+  
+    clients.push(res);
+  
+    req.on('close', () => {
+      clients = clients.filter(client => client !== res);
+    });
   });
-});
-
-const sendSSEToClients = (data) => {
-  const message = `data: ${JSON.stringify(data)}\n\n`;
-  clients.forEach(client => client.write(message));
-};
+  
+  const sendSSEToClients = (data) => {
+    const message = `data: ${JSON.stringify(data)}\n\n`;
+    clients.forEach(client => client.write(message));
+  };
 
   // Route to handle scanning QR code and updating data
   
@@ -282,7 +283,7 @@ const sendSSEToClients = (data) => {
   
       if (response.rowCount > 0) {
         // Send SSE event to the SSE server
-        // await axios.post('https://stu-backend.vercel.app/trigger-sse', user);
+        // await axios.post('https://stu-backend.vercel.app/trigger-sse', user);x
         sendSSEToClients(user);
 
         // await axios.post('http://localhost:2000/trigger-sse', user);
