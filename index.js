@@ -10,10 +10,16 @@ const cors = require("cors");
 const bodyParser = require('body-parser') ; // Import bodyParser for parsing request bodies
 const pool = require('./db'); // Import the db.js file
 const bcrypt = require('bcryptjs');
-app.use(express.json());
 
+
+
+app.use(express.json());
+app.use(cors());
 app.use(bodyParser.json())
 const port=2000
+
+
+
 // const allowedOrigins = [
 //   'https://teacger-frontend.vercel.app',
 //   'https://stu-backend.vercel.app',
@@ -26,15 +32,7 @@ const port=2000
 //   'http://localhost:5174'
 // ];
 
-const allowedOrigins = [
-  'https://teacger-frontend.vercel.app',
-  'https://stu-backend.vercel.app',
-  'https://teacger-frontend-eg649bk4i-chetans-projects-9b041f40.vercel.app',
-  'https://student-frontend-eu1u.vercel.app',
-  'https://student-frontend-eu1u-ae7wb5bh8-chetans-projects-9b041f40.vercel.app',
-  'http://localhost:5173',
-  'http://localhost:5174'
-];
+
 
 // app.use(cors({
 //   origin: (origin, callback) => {
@@ -239,65 +237,25 @@ app.get('/',async(req,res)=>{
   
 
 
- 
+// app.js
+app.post('/present', async (req, res) => {
+  try {
+    const { students,lec_id } = req.body; // Receive an array of students with their IDs
+    // cojnsole.log(students);
+    // Construct the SET part of the SQL query dynamically
+    const updateColumns = students.map(student => `"${student.student_id}" = 'present'`).join(', ');
+console.log(updateColumns);
+    // SQL query to update the attendance record for the given lecture ID
+    const query = `UPDATE attendance_record SET ${updateColumns} WHERE lec_id = $1`;
 
-  // let clients = [];
-  
-  // app.get('/events', (req, res) => {
-  //   res.setHeader('Content-Type', 'text/event-stream');
-  //   res.setHeader('Cache-Control', 'no-cache');
-  //   res.setHeader('Connection', 'keep-alive');
-  
-  //   // Adding CORS headers for the SSE endpoint
-  //   const origin = req.headers.origin;
-  //   if (allowedOrigins.includes(origin)) {
-  //     res.setHeader('Access-Control-Allow-Origin', origin);
-  //   } else {
-  //     res.setHeader('Access-Control-Allow-Origin', 'https://stu-backend.vercel.app'); // Default allowed origin
-  //   }
-  //   res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  
-  //   res.flushHeaders(); // Flush the headers to establish SSE with the client
-  
-  //   clients.push(res);
-  
-  //   req.on('close', () => {
-  //     clients = clients.filter(client => client !== res);
-  //   });
-  // });
-  
-  // const sendSSEToClients = (data) => {
-  //   const message = `data: ${JSON.stringify(data)}\n\n`;
-  //   clients.forEach(client => client.write(message));
-  // };
+    await pool.query(query, [lec_id]); // Update the status for lec_id = 120
 
-  // Route to handle scanning QR code and updating data
-  
-  app.post('/scanqr', async (req, res) => {
-    try {
-      const { user } = req.body;
-  
-      console.log(user);
-      const query = `UPDATE attendance_record SET "${user.student_id}" = 'process' WHERE tem_lec_id = $1`;
-      const response = await pool.query(query, [user.tem_lec_id]);
-  
-      if (response.rowCount > 0) {
-        // Send SSE event to the SSE server
-        // await axios.post('https://stu-backend.vercel.app/trigger-sse', user);x
-        sendSSEToClients(user);
-
-        // await axios.post('http://localhost:2000/trigger-sse', user);
-  
-        res.status(200).json({ message: 'Done From your side', user });
-      } else {
-        res.status(404).json({ error: 'Record not found' });
-      }
-    } catch (error) {
-      console.error('Error updating record:', error);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  });
-
+    res.status(200).json({ message: 'Students are Present' });
+  } catch (error) {
+    console.error('Error updating attendance record:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 
   
@@ -333,7 +291,7 @@ app.get('/',async(req,res)=>{
         const response = await pool.query(query, [user.tem_lec_id]);
         if (response.rowCount > 0) {
         
-          sendSSEToClients(user);
+          // sendSSEToClients(user);
     
     
           res.status(200).json({ message: 'Done From your side',user});
