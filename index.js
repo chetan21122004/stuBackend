@@ -76,7 +76,11 @@ const port=2000
 
 // for all origin
 
-
+app.use(cors({
+  origin: 'https://teacger-frontend.vercel.app', // Replace with your frontend URL
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*'); // Allow requests from any origin
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
